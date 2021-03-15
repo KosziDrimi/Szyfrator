@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="container">
+
+  <h5>Prosimy o wypełnienie szczegółów zapytania:</h5><br>
+
+  <form class="form-group" method="POST">
+    {{ form.hidden_tag() }}
+
+        <div class="form-group" style="max-width: 30rem;">
+          {{ form.word.label(class="form-control-label") }}
+          {{ form.word(class="form-control form-control-lg border-warning mb-2") }}<br>
+        </div>
+        <div class="form-group" style="max-width: 30rem;">
+          {{ form.method.label(class="form-control-label") }}
+          {{ form.method(class="form-control form-control-lg border-warning mb-2") }}<br>
+        </div>
+
+        <div class="form-group" style="max-width: 30rem;">
+          {{ form.submit(class="btn btn-warning") }}
+        </div>
+        <p> * pola wymagane </p>
+
+  </form>
+  <br>
+
+  <h5>Rezultat szyfrowania:</h5><br>
+
+  {% if result %}
+  <div class="card border-warning mb-2" style="max-width: 30rem;">
+    <div class="card-body">
+      <div class="row">
+        <div class="col">
+          <h6 class="card-title">Zaszyfrowano: <strong>{{result}}</strong> </h6>
+            <ul>
+              <li>Słowo: {{enq.word}}</li>
+              <li>Metoda szyfrowania: {{enq.method}}</li>
+            </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  {% else %}
+  <div class="card border-warning mb-2" style="max-width: 30rem;">
+    <div class="card-body">
+      <div class="row">
+        <div class="col">
+          <h6 class="card-title">Zaszyfrowano: <strong>{{result_gad}}</strong> </h6>
+            <ul>
+              <li>Słowo: {{enq.word}}</li>
+              <li>Metoda szyfrowania: gaderypoluki</li>
+            </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card border-warning mb-2" style="max-width: 30rem;">
+    <div class="card-body">
+      <div class="row">
+        <div class="col">
+          <h6 class="card-title">Zaszyfrowano: <strong>{{result_pol}}</strong> </h6>
+            <ul>
+              <li>Słowo: {{enq.word}}</li>
+              <li>Metoda szyfrowania: politykarenu</li>
+            </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  {% endif %}
+
+</div>
+
+
+{% endblock %}
