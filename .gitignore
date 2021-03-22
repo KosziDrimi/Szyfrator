@@ -17,6 +17,7 @@ _mailinglist
 docs/_build/
 .vscode
 app_old.py
+data.sqlite
 
 # Coverage reports
 htmlcov/
