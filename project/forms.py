@@ -1,6 +1,7 @@
 from flask_wtf import FlaskForm
 from wtforms import SelectField, StringField, SubmitField
-from wtforms.validators import DataRequired
+from wtforms.validators import DataRequired, Email
+from wtforms.fields.html5 import DateField, TimeField, EmailField
 
 
 
@@ -13,3 +14,6 @@ class EnquiryForm(FlaskForm):
     submit = SubmitField('Pokaż rezultat')
 
 
+class EmailForm(FlaskForm):
+    email = EmailField('* Podaj adres e-mail:', validators=[DataRequired(), Email()])
+    submit = SubmitField('Wyślij e-mail z wynikiem szyfrowania')

@@ -8,16 +8,16 @@
   <form class="form-group" method="POST">
     {{ form.hidden_tag() }}
 
-        <div class="form-group" style="max-width: 30rem;">
+        <div class="form-group" style="max-width: 26rem;">
           {{ form.word.label(class="form-control-label") }}
           {{ form.word(class="form-control form-control-lg border-warning mb-2") }}<br>
         </div>
-        <div class="form-group" style="max-width: 30rem;">
+        <div class="form-group" style="max-width: 26rem;">
           {{ form.method.label(class="form-control-label") }}
           {{ form.method(class="form-control form-control-lg border-warning mb-2") }}<br>
         </div>
 
-        <div class="form-group" style="max-width: 30rem;">
+        <div class="form-group" style="max-width: 26rem;">
           {{ form.submit(class="btn btn-warning") }}
         </div>
         <p> * pola wymagane </p>
@@ -27,12 +27,41 @@
 
   <h5>Rezultat szyfrowania:</h5><br>
 
-  {% if result %}
-  <div class="card border-warning mb-2" style="max-width: 30rem;">
+  {% if enq.result_gad and enq.result_pol %}
+  <div class="card border-warning mb-2" style="max-width: 26rem;">
     <div class="card-body">
       <div class="row">
         <div class="col">
-          <h6 class="card-title">Zaszyfrowano: <strong>{{result}}</strong> </h6>
+          <h6 class="card-title">Zaszyfrowano: <strong>{{enq.result_gad}}</strong> </h6>
+            <ul>
+              <li>Słowo: {{enq.word}}</li>
+              <li>Metoda szyfrowania: gaderypoluki</li>
+            </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card border-warning mb-2" style="max-width: 26rem;">
+    <div class="card-body">
+      <div class="row">
+        <div class="col">
+          <h6 class="card-title">Zaszyfrowano: <strong>{{enq.result_pol}}</strong> </h6>
+            <ul>
+              <li>Słowo: {{enq.word}}</li>
+              <li>Metoda szyfrowania: politykarenu</li>
+            </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  {% elif enq.result_gad %}
+  <div class="card border-warning mb-2" style="max-width: 26rem;">
+    <div class="card-body">
+      <div class="row">
+        <div class="col">
+          <h6 class="card-title">Zaszyfrowano: <strong>{{enq.result_gad}}</strong> </h6>
             <ul>
               <li>Słowo: {{enq.word}}</li>
               <li>Metoda szyfrowania: {{enq.method}}</li>
@@ -43,35 +72,29 @@
   </div>
 
   {% else %}
-  <div class="card border-warning mb-2" style="max-width: 30rem;">
+  <div class="card border-warning mb-2" style="max-width: 26rem;">
     <div class="card-body">
       <div class="row">
         <div class="col">
-          <h6 class="card-title">Zaszyfrowano: <strong>{{result_gad}}</strong> </h6>
+          <h6 class="card-title">Zaszyfrowano: <strong>{{enq.result_pol}}</strong> </h6>
             <ul>
               <li>Słowo: {{enq.word}}</li>
-              <li>Metoda szyfrowania: gaderypoluki</li>
+              <li>Metoda szyfrowania: {{enq.method}}</li>
             </ul>
         </div>
       </div>
     </div>
   </div>
 
-  <div class="card border-warning mb-2" style="max-width: 30rem;">
-    <div class="card-body">
-      <div class="row">
-        <div class="col">
-          <h6 class="card-title">Zaszyfrowano: <strong>{{result_pol}}</strong> </h6>
-            <ul>
-              <li>Słowo: {{enq.word}}</li>
-              <li>Metoda szyfrowania: politykarenu</li>
-            </ul>
-        </div>
-      </div>
-    </div>
-  </div>
 
   {% endif %}
+
+  <br>
+  <a class="btn btn-warning" href="{{ url_for('print_pdf', enq_id=enq.id) }}">
+  Kliknij, aby wydrukować plik PDF z rezultatem</a>
+
+
+
 
 </div>
 

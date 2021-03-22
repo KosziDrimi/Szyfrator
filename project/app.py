@@ -1,9 +1,10 @@
 import os
-from flask import Flask, render_template, url_for, flash, redirect
-from forms import EnquiryForm
+from flask import Flask, render_template, url_for, flash, redirect, make_response
+from forms import EnquiryForm, EmailForm
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
-#from flask_mail import Mail, Message
+from methods import Szyfr, Gaderypoluki, Politykarenu 
+import pdfkit
 
 
 app = Flask(__name__)
@@ -14,8 +15,8 @@ basedir = os.path.abspath(os.path.dirname(__file__))
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(basedir, 'data.sqlite')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
+config = pdfkit.configuration(wkhtmltopdf=r'C:\Program Files\wkhtmltopdf\bin\wkhtmltopdf.exe')
 
-#mail = Mail(app)
 
 db = SQLAlchemy(app)
 Migrate(app,db)
@@ -28,11 +29,15 @@ class Enquiry(db.Model):
     id = db.Column(db.Integer, primary_key = True)
     word = db.Column(db.String)
     method = db.Column(db.String)
+    result_gad = db.Column(db.Text)
+    result_pol = db.Column(db.Text)
     
-    def __init__(self, word, method):
+    def __init__(self, word, method, result_gad=None, result_pol=None):
         self.word = word
         self.method = method
-
+        self.result_gad = result_gad
+        self.result_pol = result_pol
+ 
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
@@ -42,79 +47,57 @@ def index():
     if form.validate_on_submit():
         word = form.word.data
         method = form.method.data
-        
-        enq = Enquiry(word, method)
-        db.session.add(enq)
-        db.session.commit()
-        
-    
-        if enq.method == 'gaderypoluki':
-    
-            gaderypoluki = {'g': 'a', 'd': 'e', 'r': 'y', 'p': 'o', 'l': 'u', 'k': 'i'} 
-            gaderypoluki_inv = {val: key for key, val in gaderypoluki.items()}
-        
-            result = ''    
-            for char in enq.word:
-                if char in gaderypoluki.keys():
-                    result += gaderypoluki[char]
-                elif char in gaderypoluki_inv.keys():
-                    result += gaderypoluki_inv[char]
-                else:
-                    result += char
-                    
-            return render_template('action.html', result=result, enq=enq, form=form)    
             
-        
-        elif enq.method == 'politykarenu':
-        
-            politykarenu = {'p': 'o', 'l': 'i', 't': 'y', 'k': 'a', 'r': 'e', 'n': 'u'} 
-            politykarenu_inv = {val: key for key, val in politykarenu.items()}
-        
-            result = ''    
-            for char in enq.word:
-                if char in politykarenu.keys():
-                    result += politykarenu[char]
-                elif char in politykarenu_inv.keys():
-                    result += politykarenu_inv[char]
-                else:
-                    result += char
-                    
-            return render_template('action.html', result=result, enq=enq, form=form)    
+        if method == 'gaderypoluki':
     
-    
+            szyfr = Szyfr(Gaderypoluki())
+            result_gad = szyfr.szyfrowanie(word)
+            
+            enq = Enquiry(word, method, result_gad)
+            db.session.add(enq)
+            db.session.commit()
+            
+            return render_template('action.html', enq=enq, form=form)    
+        
+        elif method == 'politykarenu':
+        
+            szyfr = Szyfr(Politykarenu())
+            result_pol = szyfr.szyfrowanie(word)
+            
+            enq = Enquiry(word, method, result_pol)
+            db.session.add(enq)
+            db.session.commit()
+                
+            return render_template('action.html', enq=enq, form=form)    
+        
         else:
             
-            gaderypoluki = {'g': 'a', 'd': 'e', 'r': 'y', 'p': 'o', 'l': 'u', 'k': 'i'} 
-            gaderypoluki_inv = {val: key for key, val in gaderypoluki.items()}
-        
-            result_gad = ''    
-            for char in enq.word:
-                if char in gaderypoluki.keys():
-                    result_gad += gaderypoluki[char]
-                elif char in gaderypoluki_inv.keys():
-                    result_gad += gaderypoluki_inv[char]
-                else:
-                    result_gad += char
+           szyfr = Szyfr(Gaderypoluki())
+           result_gad = szyfr.szyfrowanie(word) 
+           szyfr.strategy = Politykarenu()
+           result_pol = szyfr.szyfrowanie(word)     
+           
+           enq = Enquiry(word, method, result_gad, result_pol)
+           db.session.add(enq)
+           db.session.commit()
             
-            politykarenu = {'p': 'o', 'l': 'i', 't': 'y', 'k': 'a', 'r': 'e', 'n': 'u'} 
-            politykarenu_inv = {val: key for key, val in politykarenu.items()}
+           return render_template('action.html', enq=enq, form=form)
         
-            result_pol = ''    
-            for char in enq.word:
-                if char in politykarenu.keys():
-                    result_pol += politykarenu[char]
-                elif char in politykarenu_inv.keys():
-                    result_pol += politykarenu_inv[char]
-                else:
-                    result_pol += char
-            
-            return render_template('action.html', result_gad=result_gad, 
-                               result_pol=result_pol, enq=enq, form=form) 
-
-
     return render_template('main.html', form=form)  
 
 
+@app.route('/<int:enq_id>')
+def print_pdf(enq_id):
+    enq = Enquiry.query.get(enq_id)
+    rendered = render_template('pdf.html', enq=enq) 
+    pdf = pdfkit.from_string(rendered, False, configuration=config)
+    response = make_response(pdf)
+    response.headers['Content-Type'] = 'application/pdf'
+    response.headers['Content-Disposition'] = 'inline; filename=output.pdf'
+    return response
+
+
+ 
 if __name__ == '__main__':
     app.run(debug=True)
     
